@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Course Booking</title>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #87CEEB, #FFD580, #FFC0CB);
+    min-height: 100vh;
+    color: #222;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Floating animation background */
+  body::before {
+    content: '';
+    position: fixed;
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    background: 
+      radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    animation: float 20s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    33% { transform: translate(30px, -30px) rotate(120deg); }
+    66% { transform: translate(-20px, 20px) rotate(240deg); }
+  }
+
+  header {
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 36px;
+    font-weight: bold;
+    position: relative;
+    z-index: 1;
+    animation: slideDown 0.8s ease-out;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .card {
+    background: white;
+    border-radius: 16px;
+    width: 280px;
+    padding: 25px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: fadeInUp 0.6s ease-out backwards;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(135, 206, 235, 0.1), transparent);
+    transform: rotate(45deg);
+    transition: 0.5s;
+  }
+
+  .card:hover::before {
+    animation: shine 1.5s ease-in-out;
+  }
+
+  @keyframes shine {
+    from { left: -50%; }
+    to { left: 150%; }
+  }
+
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.2s; }
+  .card:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px) scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .card:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+  }
+
+  .card h3 {
+    margin-bottom: 15px;
+    font-size: 22px;
+    color: #333;
+    position: relative;
+  }
+
+  button {
+    border: none;
+    padding: 12px 20px;
+    margin-top: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 100%;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    font-size: 14px;
+  }
+
+  button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  button:active::after {
+    width: 300px;
+    height: 300px;
+  }
+
+  .aboutBtn { 
+    background: linear-gradient(135deg, #87CEEB, #6BBADD);
+    color: white;
+  }
+  .aboutBtn:hover { 
+    background: linear-gradient(135deg, #6BBADD, #4FA3CC);
+    transform: translateY(-2px);
+  }
+
+  .downloadBtn { 
+    background: linear-gradient(135deg, #FFD580, #FFC04D);
+    color: #333;
+  }
+  .downloadBtn:hover { 
+    background: linear-gradient(135deg, #FFC04D, #FFAA1A);
+    transform: translateY(-2px);
+  }
+
+  .bookBtn { 
+    background: linear-gradient(135deg, #FFC0CB, #FF9AB0);
+    color: white;
+  }
+  .bookBtn:hover { 
+    background: linear-gradient(135deg, #FF9AB0, #FF7494);
+    transform: translateY(-2px);
+  }
+
+  .modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 450px;
+    animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    position: relative;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(50px) scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .modal-content h3 {
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 24px;
+  }
+
+  .modal-content p {
+    line-height: 1.6;
+    color: #666;
+    margin-bottom: 20px;
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+    font-weight: 600;
+  }
+
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+    font-family: inherit;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: #87CEEB;
+  }
+
+  .close-btn {
+    background: #f0f0f0;
+    color: #666;
+    margin-top: 10px;
+  }
+
+  .close-btn:hover {
+    background: #e0e0e0;
+  }
+
+  .submit-btn {
+    background: linear-gradient(135deg, #FFC0CB, #FF9AB0);
+    color: white;
+  }
+
+  .submit-btn:hover {
+    background: linear-gradient(135deg, #FF9AB0, #FF7494);
+  }
+
+  /* Success message animation */
+  .success-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    z-index: 2000;
+    text-align: center;
+    animation: successPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+
+  @keyframes successPop {
+    0% {
+      transform: translate(-50%, -50%) scale(0);
+      opacity: 0;
+    }
+    50% {
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+    100% {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+  }
+
+  .success-message h2 {
+    color: #4CAF50;
+    margin-bottom: 10px;
+    font-size: 28px;
+  }
+
+  .checkmark {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: block;
+    stroke-width: 3;
+    stroke: #4CAF50;
+    stroke-miterlimit: 10;
+    margin: 0 auto 20px;
+    animation: checkmark 0.6s ease-in-out;
+  }
+
+  @keyframes checkmark {
+    0% { stroke-dasharray: 0, 100; }
+    100% { stroke-dasharray: 100, 100; }
+  }
+
+  .icon {
+    margin-right: 5px;
+  }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+
+<header>📚 Course Booking System</header>
+
+<div class="container" id="courseList"></div>
+
+<!-- About Modal -->
+<div class="modal" id="aboutModal">
+  <div class="modal-content">
+    <h3 id="modalTitle"></h3>
+    <p id="modalText"></p>
+    <button class="close-btn" onclick="closeModal('aboutModal')">Close</button>
+  </div>
+</div>
+
+<!-- Booking Modal -->
+<div class="modal" id="bookingModal">
+  <div class="modal-content">
+    <h3>📝 Book Course: <span id="bookingCourseName"></span></h3>
+    <form id="bookingForm">
+      <div class="form-group">
+        <label for="studentName"><span class="icon">👤</span>Full Name *</label>
+        <input type="text" id="studentName" required placeholder="Enter your full name">
+      </div>
+      <div class="form-group">
+        <label for="studentEmail"><span class="icon">📧</span>Email *</label>
+        <input type="email" id="studentEmail" required placeholder="your.email@example.com">
+      </div>
+      <div class="form-group">
+        <label for="studentPhone"><span class="icon">📱</span>Phone Number *</label>
+        <input type="tel" id="studentPhone" required placeholder="+91 XXXXX XXXXX">
+      </div>
+      <div class="form-group">
+        <label for="studentMessage"><span class="icon">💬</span>Additional Information</label>
+        <textarea id="studentMessage" rows="3" placeholder="Any questions or special requirements?"></textarea>
+      </div>
+      <button type="submit" class="submit-btn">✅ Confirm Booking</button>
+      <button type="button" class="close-btn" onclick="closeModal('bookingModal')">Cancel</button>
+    </form>
+  </div>
+</div>
+
+<script>
+const { jsPDF } = window.jspdf;
+
+const courses = [
+  {
+    name: "JavaScript Basics",
+    about: "Learn fundamentals of JavaScript including variables, loops, functions, and DOM manipulation. Perfect for beginners starting their web development journey.",
+    brochure: {
+      title: "JavaScript Basics Course",
+      duration: "6 Weeks",
+      level: "Beginner",
+      price: "₹4,999",
+      topics: [
+        "Variables and Data Types",
+        "Control Flow & Loops",
+        "Functions and Scope",
+        "DOM Manipulation",
+        "Events and Event Handling",
+        "ES6+ Features"
+      ],
+      description: "Master the fundamentals of JavaScript programming. This course covers everything from basic syntax to modern ES6+ features, giving you a solid foundation for web development."
+    }
+  },
+  {
+    name: "Web Development",
+    about: "Complete HTML, CSS, and JavaScript training from beginner to intermediate level. Build responsive and interactive websites from scratch.",
+    brochure: {
+      title: "Full Stack Web Development",
+      duration: "12 Weeks",
+      level: "Beginner to Intermediate",
+      price: "₹9,999",
+      topics: [
+        "HTML5 Semantic Elements",
+        "CSS3 and Flexbox/Grid",
+        "Responsive Web Design",
+        "JavaScript Fundamentals",
+        "Version Control with Git",
+        "Web APIs and Fetch"
+      ],
+      description: "Comprehensive web development training covering HTML, CSS, and JavaScript. Learn to build modern, responsive websites with hands-on projects and real-world examples."
+    }
+  },
+  {
+    name: "React Course",
+    about: "Build modern, interactive UI applications using React framework. Learn hooks, state management, routing, and best practices for production apps.",
+    brochure: {
+      title: "React JS Mastery",
+      duration: "8 Weeks",
+      level: "Intermediate",
+      price: "₹7,999",
+      topics: [
+        "React Components & JSX",
+        "Hooks (useState, useEffect, etc.)",
+        "State Management",
+        "React Router",
+        "API Integration",
+        "Testing and Deployment"
+      ],
+      description: "Master React JS and build professional-grade applications. Learn modern React patterns, hooks, state management, and deploy production-ready apps."
+    }
+  }
+];
+
+const container = document.getElementById("courseList");
+
+courses.forEach((course, index) => {
+  const card = document.createElement("div");
+  card.className = "card";
+
+  card.innerHTML = `
+    <h3>${course.name}</h3>
+    <button class="aboutBtn" onclick="showAbout(${index})">
+      <span class="icon">ℹ️</span>About Course
+    </button>
+    <button class="downloadBtn" onclick="downloadBrochure(${index})">
+      <span class="icon">📄</span>Download PDF Brochure
+    </button>
+    <button class="bookBtn" onclick="openBookingForm('${course.name}')">
+      <span class="icon">🎓</span>Book Course
+    </button>
+  `;
+
+  container.appendChild(card);
+});
+
+function showAbout(i) {
+  document.getElementById("modalTitle").innerText = courses[i].name;
+  document.getElementById("modalText").innerText = courses[i].about;
+  document.getElementById("aboutModal").style.display = "flex";
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).style.display = "none";
+  if (modalId === 'bookingModal') {
+    document.getElementById("bookingForm").reset();
+  }
+}
+
+let currentCourse = "";
+
+function openBookingForm(courseName) {
+  currentCourse = courseName;
+  document.getElementById("bookingCourseName").innerText = courseName;
+  document.getElementById("bookingModal").style.display = "flex";
+}
+
+document.getElementById("bookingForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+  
+  const name = document.getElementById("studentName").value;
+  const email = document.getElementById("studentEmail").value;
+  const phone = document.getElementById("studentPhone").value;
+  const message = document.getElementById("studentMessage").value;
+  
+  // Close the booking modal
+  closeModal('bookingModal');
+  
+  // Show success message
+  showSuccessMessage(name, currentCourse);
+  
+  // In real application, you would send this data to a server
+  console.log("Booking Details:", {
+    course: currentCourse,
+    name,
+    email,
+    phone,
+    message
+  });
+});
+
+function showSuccessMessage(name, course) {
+  const successDiv = document.createElement('div');
+  successDiv.className = 'success-message';
+  successDiv.innerHTML = `
+    <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+      <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+      <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+    </svg>
+    <h2>Booking Confirmed! 🎉</h2>
+    <p><strong>${name}</strong>, your booking for<br><strong>${course}</strong> has been confirmed!</p>
+    <p style="color: #666; font-size: 14px; margin-top: 15px;">We'll contact you shortly with further details.</p>
+  `;
+  
+  document.body.appendChild(successDiv);
+  
+  // Remove success message after 4 seconds
+  setTimeout(() => {
+    successDiv.style.animation = 'fadeOut 0.3s ease forwards';
+    setTimeout(() => successDiv.remove(), 300);
+  }, 4000);
+}
+
+function downloadBrochure(i) {
+  const course = courses[i];
+  const doc = new jsPDF();
+  
+  // Set colors
+  const primaryColor = [135, 206, 235];
+  const accentColor = [255, 192, 203];
+  
+  // Add header background
+  doc.setFillColor(...primaryColor);
+  doc.rect(0, 0, 210, 40, 'F');
+  
+  // Add title
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(22);
+  doc.setFont(undefined, 'bold');
+  doc.text(course.brochure.title, 105, 20, { align: 'center' });
+  
+  // Add subtitle
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'normal');
+  doc.text('Professional Training Program', 105, 30, { align: 'center' });
+  
+  // Course details box
+  doc.setFillColor(255, 240, 245);
+  doc.rect(15, 50, 180, 35, 'F');
+  
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(11);
+  doc.setFont(undefined, 'bold');
+  
+  doc.text(`Duration: ${course.brochure.duration}`, 20, 60);
+  doc.text(`Level: ${course.brochure.level}`, 20, 70);
+  doc.text(`Price: ${course.brochure.price}`, 20, 80);
+  
+  // Description
+  doc.setFontSize(14);
+  doc.setFont(undefined, 'bold');
+  doc.text('Course Overview', 20, 100);
+  
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  const splitDescription = doc.splitTextToSize(course.brochure.description, 170);
+  doc.text(splitDescription, 20, 110);
+  
+  // Topics covered
+  doc.setFontSize(14);
+  doc.setFont(undefined, 'bold');
+  doc.text('Topics Covered', 20, 140);
+  
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  let yPos = 150;
+  course.brochure.topics.forEach((topic, idx) => {
+    doc.setFillColor(...accentColor);
+    doc.circle(23, yPos - 2, 1.5, 'F');
+    doc.text(topic, 28, yPos);
+    yPos += 8;
+  });
+  
+  // Footer
+  doc.setFillColor(...primaryColor);
+  doc.rect(0, 270, 210, 27, 'F');
+  
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(10);
+  doc.text('📧 info@coursebooking.com  |  📱 +91 98765 43210  |  🌐 www.coursebooking.com', 105, 283, { align: 'center' });
+  
+  // Save the PDF
+  doc.save(`${course.name.replace(/\s+/g, '_')}_Brochure.pdf`);
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+  if (event.target.classList.contains('modal')) {
+    event.target.style.display = "none";
+  }
+}
+
+// Add fadeOut animation
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes fadeOut {
+    from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    to { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+  }
+`;
+document.head.appendChild(style);
+</script>
+
+</body>
+</html>
